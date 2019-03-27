@@ -1,68 +1,108 @@
 #include <stdio.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #define STACK_DEPTH 10
 
 int stack_ptr; // The stack pointer
 double stack[STACK_DEPTH]; // An int array representing the rpn stack
 
-void error(const char* err)
+void error(const char* err, int n)
 {
-	printf("Error at: %s\n", err);
+	printf("Line %d: error at: %s\n",n , err);
+	//printf("Stack pointer was %d\n", stack_ptr);
 }
 
 void push(double nbr)
 {
-	if(stack_ptr==STACK_DEPTH){
-		error("Stack depth reached");
-		return;
-	}
 	stack_ptr++;
 	stack[stack_ptr]=nbr;
+	//printf("Pushed %lf, current ptr is %d\n",nbr,stack_ptr);
 }
 
 double pop()
 {
-	if(stack_ptr==0){
-		error("Cannot pop an empty stack");
-		return 0;
-	}
 	double ret=stack[stack_ptr];
 	stack_ptr--;
+	//printf("Popped %lf, current ptr is %d\n",ret, stack_ptr);
 	return ret;
 }
 
-void rpn()
+bool rpnLine(int line)
 {
-	//TODO: implement as main rpn calculator function
+	//TODO:t kinta works, fix the bugs 
 
 	int c;
-	int linecount = 1;
+	int current=0;
 	
 	while(1){
 		c=getchar();
-		if (c==EOF){
-			return;
-		} else if(c=='\n') {
-			printf("Line %d: %lf\n",linecount,pop());
-			linecount++;
+
+		if(c==' '){
+			if(stack_ptr==9){
+				error("Stack full", line);
+				return false;
+			}
+			push(current);
+			current=0;
 		} else if(isdigit(c)){
-			push(c-'0');
-		} else if(c=='+') {
+			current*=10;
+			current+=(c-'0');
+		} else if(c=='+'){
+			if(stack_ptr<1){
+				error("Not enough numbers on stack", line);
+				return false;
+			}
 			push(pop()+pop());
 		} else if(c=='-'){
+			if(stack_ptr<1){
+                                error("Not enough numbers on stack", line);
+                                return false;
+                        }
 			double a=pop();
 			push(pop()-a);
-		} else if(c=='*'){
+                } else if(c=='*'){
+			if(stack_ptr<1){
+                                error("Not enough numbers on stack", line);
+                                return false;
+                        }
 			push(pop()*pop());
-		} else if(c=='/'){
+                } else if(c=='/'){
+			if(stack_ptr<1){
+                                error("Not enough numbers on stack", line);
+                                return false;
+                        }
 			double a=pop();
+			if(a==0){
+				error("Cannot divide by 0", line);
+				return false;
+			}
 			push(pop()/a);
-		} 	
+                } else if(c=='\n'){
+
+                        if(stack_ptr!=0){
+                                error("\\n",line);
+                        }
+                        return false;
+                } else if (c==EOF) {
+			return true;
+		}
 	}
 }
 	
 int main(int argc, char** argv)
 {	
-	rpn();
+	int linecount=1;
+	while(1){
+		stack_ptr=-1;
+		if(rpnLine(linecount)){
+			break;
+		}
+		if(stack[0]-(int) stack[0]==0){
+			printf("Line %d: %d\n",linecount , (int) stack[0]);
+		} else {
+			printf("Line %d: %lf\n",linecount , stack[0]);	
+		}
+		linecount++;
+	}
 }

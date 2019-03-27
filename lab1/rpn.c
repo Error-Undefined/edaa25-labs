@@ -1,26 +1,43 @@
 #include <stdio.h>
+#include <ctype.h>
 
 #define STACK_DEPTH 10
 
 double stack[STACK_DEPTH]; // A double array representing the rpn stack
 int stack_ptr; // The stack pointer
 
-void push(double nbr)
+void error(const char* err)
 {
-	//TODO: implement as a function that pushes nbr on the stack
+	printf("Error at %s\n", err);
 }
 
-double pop()
+void push(int nbr)
 {
-	//TODO: implement as a function that pops the stack at the current stack pointer
+	if(stack_ptr>9){
+		error("Stack depth reached");
+		return;
+	}
+	stack[stack_ptr]=nbr;
+	stack_ptr++;
 }
 
-double rpn(char c)
+int pop()
+{
+	if(stack_ptr==0){
+		error("Cannot pop an empty stack");
+		return 0;
+	}
+	stack_ptr--;
+	return stack[stack_ptr+1];
+}
+
+double rpn()
 {
 	//TODO: implement as main rpn calculator function
 }
-
+	
 int main(int argc, char** argv)
 {
 	stack_ptr=0;
+	rpn();
 }

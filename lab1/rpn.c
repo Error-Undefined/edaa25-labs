@@ -17,59 +17,70 @@ void push(double nbr)
 {
 	stack_ptr++;
 	stack[stack_ptr]=nbr;
-	//printf("Pushed %lf, current ptr is %d\n",nbr,stack_ptr);
+	printf("Pushed %lf, current ptr is %d\n",nbr,stack_ptr);
 }
 
 double pop()
 {
 	double ret=stack[stack_ptr];
 	stack_ptr--;
-	//printf("Popped %lf, current ptr is %d\n",ret, stack_ptr);
+	printf("Popped %lf, current ptr is %d\n",ret, stack_ptr);
 	return ret;
 }
 
 bool rpnLine(int line)
 {
-	//TODO:t kinta works, fix the bugs 
+	//TODO: almost works but segfaults 
 
 	int c;
-	int current=0;
+	double current=0;
+	int prev;
 	
 	while(1){
+		prev=c;
 		c=getchar();
 
-		if(c==' '){
+		if(isdigit(prev)&&(c=='+'||c=='-'||c=='*'||c=='/')){
+			push(prev-'0');
+			if(c=='\n'){
+				return false;	
+			}	
+		}
+
+		if(c==' '){ 
 			if(stack_ptr==9){
 				error("Stack full", line);
 				return false;
 			}
-			push(current);
+			if(isdigit(prev)){
+				push(current);
+			}
 			current=0;
 		} else if(isdigit(c)){
 			current*=10;
 			current+=(c-'0');
 		} else if(c=='+'){
 			if(stack_ptr<1){
-				error("Not enough numbers on stack", line);
+				error("Not enough numbers on stack (+)", line);
 				return false;
 			}
 			push(pop()+pop());
 		} else if(c=='-'){
 			if(stack_ptr<1){
-                                error("Not enough numbers on stack", line);
+                                error("Not enough numbers on stack (-)", line);
                                 return false;
                         }
 			double a=pop();
 			push(pop()-a);
                 } else if(c=='*'){
 			if(stack_ptr<1){
-                                error("Not enough numbers on stack", line);
+                                error("Not enough numbers on stack (*)", line);
                                 return false;
                         }
 			push(pop()*pop());
                 } else if(c=='/'){
 			if(stack_ptr<1){
-                                error("Not enough numbers on stack", line);
+                                error("Not enough numbers on stack (/)", line);
                                 return false;
                         }
 			double a=pop();
@@ -86,6 +97,8 @@ bool rpnLine(int line)
                         return false;
                 } else if (c==EOF) {
 			return true;
+		} else {
+			error("Bad character", line);
 		}
 	}
 }
